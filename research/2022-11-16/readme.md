@@ -2,19 +2,7 @@
 
 https://xda-developers.com/download-google-apps-gapps
 
-We want to match the Android Studio pull with something. Since all the below
-fail, we need to pull direct from Google Play. Since we cant get version
-history, we need to brute force it. Whats the oldest version we care about?
-This:
-
-~~~
-> adb shell dumpsys package com.android.vending | rg versionName
-    versionName=6.7.15.E-all [0] 2987020
-> adb shell dumpsys package com.android.vending | rg versionCode
-    versionCode=80671500 minSdk=14 targetSdk=23
-~~~
-
-## BiTGApps
+## BiT GApps
 
 Only ARM is offered:
 
@@ -38,9 +26,6 @@ versionName='30.3.21-21 [0] [PR] 445437866' platformBuildVersionName='Tiramisu'
 closest match with Android Studio is API 33:
 
 ~~~
-> adb shell dumpsys package com.google.android.gsf | rg versionName
-    versionName=13
-
 > adb shell dumpsys package com.android.vending | rg versionName
     versionName=30.4.17-21 [0] [PR] 445549118
 > adb shell dumpsys package com.android.vending | rg versionCode
@@ -51,13 +36,13 @@ but Lite GApps does not offer API 33:
 
 https://github.com/litegapps1/litegapps1.github.io/issues/1
 
-## MindTheGapps
+## Mind The GApps
 
 Only ARM is offered:
 
 http://downloads.codefi.re/jdcteam/javelinanddart/gapps
 
-## NikGApps
+## Nik GApps
 
 Only ARM is offered:
 
