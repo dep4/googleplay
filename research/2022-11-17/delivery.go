@@ -1,9 +1,12 @@
 package main
 
 import (
+   "bytes"
    "fmt"
+   "io"
    "net/http"
    "net/url"
+   "os"
    "time"
 )
 
@@ -25,13 +28,6 @@ func (v version) String() string {
    return string(b)
 }
 
-/*
-versionName=6.7.15
-versionCode=80671500
-
-versionName=30.4.17
-versionCode=83041710
-*/
 func main() {
    var req http.Request
    req.Header = make(http.Header)
@@ -43,22 +39,65 @@ func main() {
    req.URL.Scheme = "https"
    req.Header["User-Agent"] = []string{"Android-Finsky (sdk=9,versionCode=99999999)"}
    req.Header["X-Dfe-Device-Id"] = []string{device}
-   var v version
-   for v.major = 6; v.major <= 30; v.major++ {
-      for v.minor = 0; v.minor <= 9; v.minor++ {
-         for v.patch = 0; v.patch <= 99; v.patch++ {
-            val["vc"] = []string{v.String()}
-            req.URL.RawQuery = val.Encode()
-            res, err := new(http.Transport).RoundTrip(&req)
+   // done
+   // v := version{major: 6}
+   // v := version{major: 7}
+   // v := version{major: 8}
+   
+   // to do
+   // v := version{major: 9}
+   // v := version{major: 10}
+   // v := version{major: 11}
+   // v := version{major: 12}
+   // v := version{major: 13}
+   // v := version{major: 14}
+   // v := version{major: 15}
+   // v := version{major: 16}
+   // v := version{major: 17}
+   // v := version{major: 18}
+   // v := version{major: 19}
+   // v := version{major: 20}
+   // v := version{major: 21}
+   // v := version{major: 22}
+   // v := version{major: 23}
+   // v := version{major: 24}
+   // v := version{major: 25}
+   // v := version{major: 26}
+   // v := version{major: 27}
+   // v := version{major: 28}
+   // v := version{major: 29}
+   // v := version{major: 30}
+   for v.minor = 0; v.minor <= 9; v.minor++ {
+      for v.patch = 0; v.patch <= 99; v.patch++ {
+         if v.String() <= "80675900" {
+            continue
+         }
+         val["vc"] = []string{v.String()}
+         req.URL.RawQuery = val.Encode()
+         res, err := new(http.Transport).RoundTrip(&req)
+         if err != nil {
+            panic(err)
+         }
+         body, err := io.ReadAll(res.Body)
+         if err != nil {
+            panic(err)
+         }
+         if bytes.Contains(body, []byte("/by-token/")) {
+            fmt.Println(res.Status, "pass", v.String())
+            file, err := os.Create(v.String())
             if err != nil {
                panic(err)
             }
-            if err := res.Body.Close(); err != nil {
+            if err := file.Close(); err != nil {
                panic(err)
             }
-            fmt.Println(res.Status, v.String())
-            time.Sleep(99 * time.Millisecond)
+         } else {
+            fmt.Println(res.Status, "fail", v.String())
          }
+         if err := res.Body.Close(); err != nil {
+            panic(err)
+         }
+         time.Sleep(199 * time.Millisecond)
       }
    }
 }

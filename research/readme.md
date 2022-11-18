@@ -66,10 +66,14 @@ adb reboot
 ~~~
 > adb shell dumpsys package com.google.android.gsf | rg versionName
     versionName=8.0.0
+
 > adb shell dumpsys package com.google.android.gms | rg versionName
     versionName=11.7.43 (470-172403884)
+
 > adb shell dumpsys package com.android.vending | rg versionName
     versionName=7.9.66.Q-all [0] [PR] 163928463
+> adb shell dumpsys package com.android.vending | rg versionCode
+    versionCode=80796600 minSdk=14 targetSdk=25
 ~~~
 
 ## API 27
