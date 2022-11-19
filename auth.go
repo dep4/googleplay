@@ -1,6 +1,7 @@
 package googleplay
 
 import (
+   "bufio"
    "github.com/89z/rosso/crypto"
    "github.com/89z/rosso/http"
    "github.com/89z/rosso/protobuf"
@@ -13,45 +14,26 @@ import (
 
 var Client = http.Default_Client
 
-func format_query(vals url.Values) string {
-   var buf strings.Builder
-   for key := range vals {
-      val := vals.Get(key)
-      buf.WriteString(key)
-      buf.WriteByte('=')
-      buf.WriteString(val)
-      buf.WriteByte('\n')
-   }
-   return buf.String()
-}
-
-// this beats "io.Reader", and also "bytes.Fields"
-func parse_query(query string) url.Values {
-   vals := make(url.Values)
-   for _, field := range strings.Fields(query) {
-      key, val, ok := strings.Cut(field, "=")
-      if ok {
-         vals.Add(key, val)
-      }
-   }
-   return vals
-}
-
 type Auth struct {
    url.Values
 }
 
+type Response struct {
+   *http.Response
+}
+
 // You can also use host "android.clients.google.com", but it also uses
 // TLS fingerprinting.
-func New_Auth(email, password string) (*Auth, error) {
-   body := url.Values{
+func New_Auth(email, password string) (*Response, error) {
+   req_body := url.Values{
       "Email": {email},
       "Passwd": {password},
       "client_sig": {""},
       "droidguard_results": {"."},
    }.Encode()
    req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(body),
+      "POST", "https://android.googleapis.com/auth",
+      strings.NewReader(req_body),
    )
    if err != nil {
       return nil, err
@@ -66,54 +48,19 @@ func New_Auth(email, password string) (*Auth, error) {
    if err != nil {
       return nil, err
    }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   var auth Auth
-   auth.Values = parse_query(string(query))
-   return &auth, nil
+   return &Response{res}, nil
 }
 
-func (a Auth) Create(name string) error {
-   file, err := os.Open(name)
+func (r Response) Create(name string) error {
+   defer r.Body.Close()
+   file, err := os.Create(name)
    if err != nil {
       return err
    }
    defer file.Close()
-   query := format_query(a.Values)
-   if _, err := file.WriteString(query); err != nil {
+   if _, err := file.ReadFrom(r.Body); err != nil {
       return err
    }
-   return nil
-}
-
-func (a *Auth) Exchange() error {
-   // these values take from Android API 28
-   body := url.Values{
-      "Token": {a.Get_Token()},
-      "app": {"com.android.vending"},
-      "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
-      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
-   }.Encode()
-   req, err := http.NewRequest(
-      "POST", "https://android.googleapis.com/auth", strings.NewReader(body),
-   )
-   if err != nil {
-      return err
-   }
-   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-   res, err := Client.Do(req)
-   if err != nil {
-      return err
-   }
-   defer res.Body.Close()
-   query, err := io.ReadAll(res.Body)
-   if err != nil {
-      return err
-   }
-   a.Values = parse_query(string(query))
    return nil
 }
 
@@ -125,30 +72,28 @@ func (a Auth) Get_Token() string {
    return a.Get("Token")
 }
 
-type Header struct {
-   Auth Auth // Authorization
-   Device Device // X-Dfe-Device-Id
-   Single bool
-}
-
-func (h *Header) Open_Device(name string) error {
-   buf, err := os.ReadFile(name)
+func (a *Auth) Exchange() error {
+   // these values take from Android API 28
+   req_body := url.Values{
+      "Token": {a.Get_Token()},
+      "app": {"com.android.vending"},
+      "client_sig": {"38918a453d07199354f8b19af05ec6562ced5788"},
+      "service": {"oauth2:https://www.googleapis.com/auth/googleplay"},
+   }.Encode()
+   req, err := http.NewRequest(
+      "POST", "https://android.googleapis.com/auth",
+      strings.NewReader(req_body),
+   )
    if err != nil {
       return err
    }
-   h.Device.Message, err = protobuf.Unmarshal(buf)
+   req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+   res, err := Client.Do(req)
    if err != nil {
       return err
    }
-   return nil
-}
-
-func (h *Header) Open_Auth(name string) error {
-   query, err := os.ReadFile(name)
-   if err != nil {
-      return err
-   }
-   h.Auth.Values = parse_query(string(query))
+   defer res.Body.Close()
+   a.Values = read_query(res.Body)
    return nil
 }
 
@@ -181,4 +126,44 @@ func (h Header) Set_Agent(head http.Header) {
 
 func (h Header) Set_Auth(head http.Header) {
    head.Set("Authorization", "Bearer " + h.Auth.Get_Auth())
+}
+
+func read_query(read io.Reader) url.Values {
+   values := make(url.Values)
+   scan := bufio.NewScanner(read)
+   for scan.Scan() {
+      key, value, pass := strings.Cut(scan.Text(), "=")
+      if pass {
+         values.Add(key, value)
+      }
+   }
+   return values
+}
+
+type Header struct {
+   Auth Auth // Authorization
+   Device Device // X-Dfe-Device-Id
+   Single bool
+}
+
+func (h *Header) Open_Auth(name string) error {
+   file, err := os.Open(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
+   h.Auth.Values = read_query(file)
+   return nil
+}
+
+func (h *Header) Open_Device(name string) error {
+   buf, err := os.ReadFile(name)
+   if err != nil {
+      return err
+   }
+   h.Device.Message, err = protobuf.Unmarshal(buf)
+   if err != nil {
+      return err
+   }
+   return nil
 }

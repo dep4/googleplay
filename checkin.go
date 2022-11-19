@@ -3,9 +3,7 @@ package googleplay
 import (
    "bytes"
    "github.com/89z/rosso/protobuf"
-   "io"
    "net/http"
-   "os"
    "strconv"
    "time"
 )
@@ -88,8 +86,8 @@ var Phone = Config{
 }
 
 // A Sleep is needed after this.
-func (c Config) Checkin(native_platform string) (*Device, error) {
-   checkin := protobuf.Message{
+func (c Config) Checkin(native_platform string) (*Response, error) {
+   req_body := protobuf.Message{
       4: protobuf.Message{ // checkin
          1: protobuf.Message{ // build
             // sdkVersion
@@ -116,21 +114,21 @@ func (c Config) Checkin(native_platform string) (*Device, error) {
    }
    for _, library := range c.System_Shared_Library {
       // .deviceConfiguration.systemSharedLibrary
-      checkin.Get(18).Add_String(9, library)
+      req_body.Get(18).Add_String(9, library)
    }
    for _, extension := range c.GL_Extension {
       // .deviceConfiguration.glExtension
-      checkin.Get(18).Add_String(15, extension)
+      req_body.Get(18).Add_String(15, extension)
    }
    for _, name := range c.New_System_Available_Feature {
       // .deviceConfiguration.newSystemAvailableFeature
-      checkin.Get(18).Add(26, protobuf.Message{
+      req_body.Get(18).Add(26, protobuf.Message{
          1: protobuf.String(name),
       })
    }
    req, err := http.NewRequest(
       "POST", "https://android.googleapis.com/checkin",
-      bytes.NewReader(checkin.Marshal()),
+      bytes.NewReader(req_body.Marshal()),
    )
    if err != nil {
       return nil, err
@@ -140,26 +138,11 @@ func (c Config) Checkin(native_platform string) (*Device, error) {
    if err != nil {
       return nil, err
    }
-   defer res.Body.Close()
-   buf, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   var dev Device
-   dev.Message, err = protobuf.Unmarshal(buf)
-   if err != nil {
-      return nil, err
-   }
-   return &dev, nil
+   return &Response{res}, nil
 }
 
 type Device struct {
    protobuf.Message
-}
-
-func (d Device) Create(name string) error {
-   data := d.Marshal()
-   return os.WriteFile(name, data, os.ModePerm)
 }
 
 func (d Device) ID() (uint64, error) {

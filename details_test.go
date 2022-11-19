@@ -48,9 +48,6 @@ func Test_Details(t *testing.T) {
       if err != nil {
          t.Fatal(err)
       }
-      if _, err := d.Upload_Date(); err != nil {
-         t.Fatal(err)
-      }
       if _, err := d.Version(); err != nil {
          t.Fatal(err)
       }
@@ -69,7 +66,11 @@ func Test_Details(t *testing.T) {
       if _, err := d.Currency_Code(); err != nil {
          t.Fatal(err)
       }
-      date, err := d.Time()
+      raw_date, err := d.Upload_Date()
+      if err != nil {
+         t.Fatal(err)
+      }
+      date, err := time.Parse("Jan 2, 2006", raw_date)
       if err != nil {
          t.Fatal(err)
       }
