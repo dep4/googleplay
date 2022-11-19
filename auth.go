@@ -77,8 +77,16 @@ func New_Auth(email, password string) (*Auth, error) {
 }
 
 func (a Auth) Create(name string) error {
+   file, err := os.Open(name)
+   if err != nil {
+      return err
+   }
+   defer file.Close()
    query := format_query(a.Values)
-   return os.WriteFile(name, []byte(query), os.ModePerm)
+   if _, err := file.WriteString(query); err != nil {
+      return err
+   }
+   return nil
 }
 
 func (a *Auth) Exchange() error {
