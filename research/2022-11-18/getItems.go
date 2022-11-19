@@ -10,6 +10,14 @@ import (
    "net/url"
 )
 
+func field_mask() string {
+   mask := protobuf.Message{
+      // min
+      3: protobuf.Bytes{0, 0, 0, 0xc0},
+   }.Marshal()
+   return base64.StdEncoding.EncodeToString(mask)
+}
+
 func main() {
    var req http.Request
    req_body := protobuf.Message{
@@ -44,25 +52,4 @@ func main() {
    } else {
       fmt.Println("fail")
    }
-}
-
-func field_mask() string {
-   mask := protobuf.Message{
-      //pass
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xff, 0x7},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xff},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xfe},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xf0},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xd0},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xc0},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xae, 0xc0},
-      3:protobuf.Bytes{0xe6, 0xff, 0xa, 0xc0},
-      //fail
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xb0},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0x90},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0x10},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf, 0xF},
-      //3:protobuf.Bytes{0xe6, 0xff, 0xaf},
-   }.Marshal()
-   return base64.StdEncoding.EncodeToString(mask)
 }
