@@ -13,6 +13,75 @@ type Delivery struct {
    protobuf.Message
 }
 
+func (d Delivery) Additional_File() []File_Metadata {
+   var files []File_Metadata
+   // .additionalFile
+   for _, file := range d.Get_Messages(4) {
+      files = append(files, File_Metadata{file})
+   }
+   return files
+}
+
+// .downloadUrl
+func (d Delivery) Download_URL() (string, error) {
+   return d.Get_String(3)
+}
+
+func (d Delivery) Split_Data() []Split_Data {
+   var splits []Split_Data
+   // .splitDeliveryData
+   for _, split := range d.Get_Messages(15) {
+      splits = append(splits, Split_Data{split})
+   }
+   return splits
+}
+
+type File struct {
+   Package_Name string
+   Version_Code uint64
+}
+
+func (f File) APK(id string) string {
+   b := []byte(f.Package_Name)
+   b = append(b, '-')
+   if id != "" {
+      b = append(b, id...)
+      b = append(b, '-')
+   }
+   b = strconv.AppendUint(b, f.Version_Code, 10)
+   b = append(b, ".apk"...)
+   return string(b)
+}
+
+func (f File) OBB(file_type uint64) string {
+   var b []byte
+   if file_type >= 1 {
+      b = append(b, "patch"...)
+   } else {
+      b = append(b, "main"...)
+   }
+   b = append(b, '.')
+   b = strconv.AppendUint(b, f.Version_Code, 10)
+   b = append(b, '.')
+   b = append(b, f.Package_Name...)
+   b = append(b, ".obb"...)
+   return string(b)
+}
+
+type File_Metadata struct {
+   protobuf.Message
+}
+
+// .downloadUrl
+func (f File_Metadata) Download_URL() (string, error) {
+   return f.Get_String(4)
+}
+
+// .fileType
+func (f File_Metadata) File_Type() (uint64, error) {
+   return f.Get_Varint(1)
+}
+
 func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    req, err := http.NewRequest(
       "GET", "https://play-fe.googleapis.com/fdfe/delivery", nil,
@@ -62,18 +131,8 @@ func (h Header) Delivery(app string, ver uint64) (*Delivery, error) {
    return &del, nil
 }
 
-// .downloadUrl
-func (d Delivery) Download_URL() (string, error) {
-   return d.Get_String(3)
-}
-
 type Split_Data struct {
    protobuf.Message
-}
-
-// .id
-func (s Split_Data) ID() (string, error) {
-   return s.Get_String(1)
 }
 
 // .downloadUrl
@@ -81,66 +140,7 @@ func (s Split_Data) Download_URL() (string, error) {
    return s.Get_String(5)
 }
 
-func (d Delivery) Split_Data() []Split_Data {
-   var splits []Split_Data
-   // .splitDeliveryData
-   for _, split := range d.Get_Messages(15) {
-      splits = append(splits, Split_Data{split})
-   }
-   return splits
-}
-
-func (d Delivery) Additional_File() []File_Metadata {
-   var files []File_Metadata
-   // .additionalFile
-   for _, file := range d.Get_Messages(4) {
-      files = append(files, File_Metadata{file})
-   }
-   return files
-}
-
-type File_Metadata struct {
-   protobuf.Message
-}
-
-// .fileType
-func (f File_Metadata) File_Type() (uint64, error) {
-   return f.Get_Varint(1)
-}
-
-// .downloadUrl
-func (f File_Metadata) Download_URL() (string, error) {
-   return f.Get_String(4)
-}
-
-type File struct {
-   Package_Name string
-   Version_Code uint64
-}
-
-func (f File) APK(id string) string {
-   b := []byte(f.Package_Name)
-   b = append(b, '-')
-   if id != "" {
-      b = append(b, id...)
-      b = append(b, '-')
-   }
-   b = strconv.AppendUint(b, f.Version_Code, 10)
-   b = append(b, ".apk"...)
-   return string(b)
-}
-
-func (f File) OBB(file_type uint64) string {
-   var b []byte
-   if file_type >= 1 {
-      b = append(b, "patch"...)
-   } else {
-      b = append(b, "main"...)
-   }
-   b = append(b, '.')
-   b = strconv.AppendUint(b, f.Version_Code, 10)
-   b = append(b, '.')
-   b = append(b, f.Package_Name...)
-   b = append(b, ".obb"...)
-   return string(b)
+// .id
+func (s Split_Data) ID() (string, error) {
+   return s.Get_String(1)
 }

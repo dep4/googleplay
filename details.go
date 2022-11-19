@@ -11,6 +11,38 @@ import (
 
 var err_device = errors.New("your device isn't compatible with this version")
 
+type Details struct {
+   protobuf.Message
+}
+
+// .creator
+func (d Details) Creator() (string, error) {
+   return d.Get_String(6)
+}
+
+// .offer.currencyCode
+func (d Details) Currency_Code() (string, error) {
+   return d.Get(8).Get_String(2)
+}
+
+// .details.appDetails.file
+func (d Details) File() []File_Metadata {
+   var files []File_Metadata
+   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
+      files = append(files, File_Metadata{file})
+   }
+   return files
+}
+
+// .details.appDetails.installationSize
+func (d Details) Installation_Size() (uint64, error) {
+   value, err := d.Get(13).Get(1).Get_Varint(9)
+   if err != nil {
+      return 0, err_device
+   }
+   return value, nil
+}
+
 func (d Details) MarshalText() ([]byte, error) {
    var b []byte
    b = append(b, "Title: "...)
@@ -80,6 +112,50 @@ func (d Details) MarshalText() ([]byte, error) {
    return append(b, '\n'), nil
 }
 
+// .offer.micros
+func (d Details) Micros() (uint64, error) {
+   return d.Get(8).Get_Varint(1)
+}
+
+// .details.appDetails
+// I dont know the name of field 70, but the similar field 13 is called
+// .numDownloads
+func (d Details) Num_Downloads() (uint64, error) {
+   return d.Get(13).Get(1).Get_Varint(70)
+}
+
+// .title
+func (d Details) Title() (string, error) {
+   return d.Get_String(5)
+}
+
+// .details.appDetails.uploadDate
+func (d Details) Upload_Date() (string, error) {
+   value, err := d.Get(13).Get(1).Get_String(16)
+   if err != nil {
+      return "", err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.versionString
+func (d Details) Version() (string, error) {
+   value, err := d.Get(13).Get(1).Get_String(4)
+   if err != nil {
+      return "", err_device
+   }
+   return value, nil
+}
+
+// .details.appDetails.versionCode
+func (d Details) Version_Code() (uint64, error) {
+   value, err := d.Get(13).Get(1).Get_Varint(3)
+   if err != nil {
+      return 0, err_device
+   }
+   return value, nil
+}
+
 func (h Header) Details(app string) (*Details, error) {
    req, err := http.NewRequest(
       "GET", "https://android.clients.google.com/fdfe/details", nil,
@@ -111,80 +187,4 @@ func (h Header) Details(app string) (*Details, error) {
    // .payload.detailsResponse.docV2
    det.Message = response_wrapper.Get(1).Get(2).Get(4)
    return &det, nil
-}
-
-type Details struct {
-   protobuf.Message
-}
-
-// .title
-func (d Details) Title() (string, error) {
-   return d.Get_String(5)
-}
-
-// .creator
-func (d Details) Creator() (string, error) {
-   return d.Get_String(6)
-}
-
-// .offer.micros
-func (d Details) Micros() (uint64, error) {
-   return d.Get(8).Get_Varint(1)
-}
-
-// .offer.currencyCode
-func (d Details) Currency_Code() (string, error) {
-   return d.Get(8).Get_String(2)
-}
-
-// .details.appDetails
-// I dont know the name of field 70, but the similar field 13 is called
-// .numDownloads
-func (d Details) Num_Downloads() (uint64, error) {
-   return d.Get(13).Get(1).Get_Varint(70)
-}
-
-// .details.appDetails.uploadDate
-func (d Details) Upload_Date() (string, error) {
-   value, err := d.Get(13).Get(1).Get_String(16)
-   if err != nil {
-      return "", err_device
-   }
-   return value, nil
-}
-
-// .details.appDetails.versionCode
-func (d Details) Version_Code() (uint64, error) {
-   value, err := d.Get(13).Get(1).Get_Varint(3)
-   if err != nil {
-      return 0, err_device
-   }
-   return value, nil
-}
-
-// .details.appDetails.versionString
-func (d Details) Version() (string, error) {
-   value, err := d.Get(13).Get(1).Get_String(4)
-   if err != nil {
-      return "", err_device
-   }
-   return value, nil
-}
-
-// .details.appDetails.installationSize
-func (d Details) Installation_Size() (uint64, error) {
-   value, err := d.Get(13).Get(1).Get_Varint(9)
-   if err != nil {
-      return 0, err_device
-   }
-   return value, nil
-}
-
-// .details.appDetails.file
-func (d Details) File() []File_Metadata {
-   var files []File_Metadata
-   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
-      files = append(files, File_Metadata{file})
-   }
-   return files
 }
