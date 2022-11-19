@@ -40,6 +40,8 @@ func main() {
    req.Header["User-Agent"] = []string{"Android-Finsky (sdk=9,versionCode=99999999)"}
    req.Header["X-Dfe-Device-Id"] = []string{device}
    // done
+   // v := version{major: 4}
+   // v := version{major: 5}
    // v := version{major: 6}
    // v := version{major: 7}
    // v := version{major: 8}
@@ -69,9 +71,6 @@ func main() {
    // v := version{major: 30}
    for v.minor = 0; v.minor <= 9; v.minor++ {
       for v.patch = 0; v.patch <= 99; v.patch++ {
-         if v.String() <= "80675900" {
-            continue
-         }
          val["vc"] = []string{v.String()}
          req.URL.RawQuery = val.Encode()
          res, err := new(http.Transport).RoundTrip(&req)

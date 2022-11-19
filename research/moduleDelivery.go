@@ -26,7 +26,7 @@ func main() {
    req.URL.Host = "play-fe.googleapis.com"
    req.URL.Path = "/fdfe/moduleDelivery"
    req.URL.Scheme = "https"
-   req.Header["X-Dfe-Device-Id"] = []string{"374a9c9111827216"}
+   req.Header["X-Dfe-Device-Id"] = []string{device}
    res, err := new(http.Transport).RoundTrip(&req)
    if err != nil {
       panic(err)
