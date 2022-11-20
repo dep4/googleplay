@@ -9,6 +9,26 @@ import (
    "time"
 )
 
+func (f flags) do_auth(dir string) error {
+   res, err := googleplay.New_Auth(f.email, f.password)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   return res.Create(dir + "/auth.txt")
+}
+
+func do_device(dir, platform string) error {
+   res, err := googleplay.Phone.Checkin(platform)
+   if err != nil {
+      return err
+   }
+   defer res.Body.Close()
+   fmt.Printf("Sleeping %v for server to process\n", googleplay.Sleep)
+   time.Sleep(googleplay.Sleep)
+   return res.Create(dir + "/" + platform + ".bin")
+}
+
 func (f flags) do_delivery(head *googleplay.Header) error {
    download := func(ref, name string) error {
       res, err := googleplay.Client.Redirect(nil).Get(ref)
@@ -63,24 +83,6 @@ func (f flags) do_delivery(head *googleplay.Header) error {
       return err
    }
    return download(ref, file.APK(""))
-}
-
-func (f flags) do_auth(dir string) error {
-   auth, err := googleplay.New_Auth(f.email, f.password)
-   if err != nil {
-      return err
-   }
-   return auth.Create(dir + "/auth.txt")
-}
-
-func do_device(dir, platform string) error {
-   device, err := googleplay.Phone.Checkin(platform)
-   if err != nil {
-      return err
-   }
-   fmt.Printf("Sleeping %v for server to process\n", googleplay.Sleep)
-   time.Sleep(googleplay.Sleep)
-   return device.Create(dir + "/" + platform + ".bin")
 }
 
 func (f flags) do_header(dir, platform string) (*googleplay.Header, error) {

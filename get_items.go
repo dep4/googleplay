@@ -4,19 +4,15 @@ import (
    "bytes"
    "encoding/base64"
    "github.com/89z/rosso/protobuf"
-   "io"
    "net/http"
+   "os"
 )
-
-type Items struct {
-   protobuf.Message
-}
 
 func (i Items) Category() (string, error) {
    return i.Get(11).Get(2).Get(2).Get(30).Get_String(1)
 }
 
-func (h Header) Get_Items(app string) (*Items, error) {
+func (h Header) Get_Items(app string) (*Response, error) {
    body := protobuf.Message{
       2: protobuf.Message{
          1: protobuf.Message{
@@ -37,6 +33,8 @@ func (h Header) Get_Items(app string) (*Items, error) {
    field := protobuf.Message{
       // valid range 0xC0 - 0xFFFFFFFF
       3: protobuf.Bytes{0xFF, 0xFF, 0xFF, 0xFF},
+      // valid range 0xC0 - 0xFFFF
+      4: protobuf.Bytes{0xFF, 0xFF},
    }.Marshal()
    mask := base64.StdEncoding.EncodeToString(field)
    req.Header.Set("X-Dfe-Item-Field-Mask", mask)
@@ -44,14 +42,21 @@ func (h Header) Get_Items(app string) (*Items, error) {
    if err != nil {
       return nil, err
    }
-   defer res.Body.Close()
-   body, err = io.ReadAll(res.Body)
+   return &Response{res}, nil
+}
+
+func Open_Items(name string) (*Items, error) {
+   data, err := os.ReadFile(name)
    if err != nil {
       return nil, err
    }
-   message, err := protobuf.Unmarshal(body)
+   message, err := protobuf.Unmarshal(data)
    if err != nil {
       return nil, err
    }
    return &Items{message}, nil
+}
+
+type Items struct {
+   protobuf.Message
 }

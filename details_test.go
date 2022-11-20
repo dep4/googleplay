@@ -81,15 +81,15 @@ func Test_Details(t *testing.T) {
 }
 
 func (a app_type) String() string {
-   var buf []byte
-   buf = append(buf, '{')
-   buf = strconv.AppendQuote(buf, a.date)
-   buf = append(buf, ',')
-   buf = strconv.AppendInt(buf, a.platform, 10)
-   buf = append(buf, ',')
-   buf = strconv.AppendQuote(buf, a.id)
-   buf = append(buf, '}')
-   return string(buf)
+   var b []byte
+   b = append(b, '{')
+   b = strconv.AppendQuote(b, a.date)
+   b = append(b, ',')
+   b = strconv.AppendInt(b, a.platform, 10)
+   b = append(b, ',')
+   b = strconv.AppendQuote(b, a.id)
+   b = append(b, '}')
+   return string(b)
 }
 
 type app_type struct {

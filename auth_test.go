@@ -7,15 +7,16 @@ import (
 )
 
 func Test_Auth(t *testing.T) {
-   auth, err := New_Auth(email, password)
-   if err != nil {
-      t.Fatal(err)
-   }
    home, err := os.UserHomeDir()
    if err != nil {
       t.Fatal(err)
    }
-   if err := auth.Create(home + "/googleplay/auth.txt"); err != nil {
+   res, err := New_Auth(email, password)
+   if err != nil {
+      t.Fatal(err)
+   }
+   defer res.Body.Close()
+   if err := res.Create(home + "/googleplay/auth.txt"); err != nil {
       t.Fatal(err)
    }
 }

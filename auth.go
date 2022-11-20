@@ -52,7 +52,6 @@ func New_Auth(email, password string) (*Response, error) {
 }
 
 func (r Response) Create(name string) error {
-   defer r.Body.Close()
    file, err := os.Create(name)
    if err != nil {
       return err
@@ -157,11 +156,11 @@ func (h *Header) Open_Auth(name string) error {
 }
 
 func (h *Header) Open_Device(name string) error {
-   buf, err := os.ReadFile(name)
+   data, err := os.ReadFile(name)
    if err != nil {
       return err
    }
-   h.Device.Message, err = protobuf.Unmarshal(buf)
+   h.Device.Message, err = protobuf.Unmarshal(data)
    if err != nil {
       return err
    }

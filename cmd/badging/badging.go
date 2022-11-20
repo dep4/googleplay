@@ -9,25 +9,25 @@ import (
 )
 
 func main() {
-   // f
-   var name string
-   flag.StringVar(&name, "f", "", "file")
-   // v
-   var verbose bool
-   flag.BoolVar(&verbose, "v", false, "verbose")
+   var f struct {
+      name string
+      verbose bool
+   }
+   flag.StringVar(&f.name, "f", "", "file")
+   flag.BoolVar(&f.verbose, "v", false, "verbose")
    flag.Parse()
-   if name != "" {
-      cmd := exec.Command("aapt", "dump", "badging", name)
+   if f.name != "" {
+      cmd := exec.Command("aapt", "dump", "badging", f.name)
       cmd.Stderr = os.Stderr
-      buf, err := cmd.Output()
+      data, err := cmd.Output()
       if err != nil {
          panic(err)
       }
-      lines := strings.FieldsFunc(string(buf), func(r rune) bool {
+      lines := strings.FieldsFunc(string(data), func(r rune) bool {
          return r == '\n'
       })
       for _, line := range lines {
-         if verbose ||
+         if f.verbose ||
          strings.HasPrefix(line, "  uses-feature:") ||
          strings.HasPrefix(line, "  uses-gl-es:") ||
          strings.HasPrefix(line, "native-code:") ||
