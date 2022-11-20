@@ -58,6 +58,26 @@ func Open_Items(name string) (*Items, error) {
    return &Items{message}, nil
 }
 
+func (i Items) Num_Downloads() (uint64, error) {
+   return i.Get(3).Get(8).Get_Varint(3)
+}
+
+func (i Items) Version_Code() (uint64, error) {
+   return i.Get(3).Get(2).Get_Varint(1)
+}
+
+func (i Items) Version() (string, error) {
+   return i.Get(3).Get(2).Get_String(2)
+}
+
+func (i Items) Upload_Date() (string, error) {
+   return i.Get(3).Get(9).Get_String(2)
+}
+
+func (i Items) Title() (string, error) {
+   return i.Get(2).Get(1).Get_String(1)
+}
+
 func (i Items) Category() (string, error) {
    return i.Get(2).Get(30).Get_String(1)
 }
