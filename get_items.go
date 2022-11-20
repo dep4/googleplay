@@ -29,8 +29,8 @@ func (h Header) Get_Items(app string) (*Response, error) {
    field := protobuf.Message{
       // valid range 0xC0 - 0xFFFFFFFF
       3: protobuf.Bytes{0xFF, 0xFF, 0xFF, 0xFF},
-      // valid range 0xC0 - 0xFFFF
-      4: protobuf.Bytes{0xFF, 0xFF},
+      // valid range 0xC0 - 0xFFFFFFFF
+      4: protobuf.Bytes{0xFF, 0xFF, 0xFF, 0xFF},
    }.Marshal()
    mask := base64.StdEncoding.EncodeToString(field)
    req.Header.Set("X-Dfe-Item-Field-Mask", mask)
