@@ -8,10 +8,6 @@ import (
    "os"
 )
 
-func (i Items) Category() (string, error) {
-   return i.Get(11).Get(2).Get(2).Get(30).Get_String(1)
-}
-
 func (h Header) Get_Items(app string) (*Response, error) {
    body := protobuf.Message{
       2: protobuf.Message{
@@ -45,6 +41,10 @@ func (h Header) Get_Items(app string) (*Response, error) {
    return &Response{res}, nil
 }
 
+type Items struct {
+   protobuf.Message
+}
+
 func Open_Items(name string) (*Items, error) {
    data, err := os.ReadFile(name)
    if err != nil {
@@ -54,9 +54,18 @@ func Open_Items(name string) (*Items, error) {
    if err != nil {
       return nil, err
    }
+   message = message.Get(11).Get(2)
    return &Items{message}, nil
 }
 
-type Items struct {
-   protobuf.Message
+func (i Items) Category() (string, error) {
+   return i.Get(2).Get(30).Get_String(1)
+}
+
+func (i Items) Creator() (string, error) {
+   return i.Get(3).Get(14).Get_String(1)
+}
+
+func (i Items) Offer() (string, error) {
+   return i.Get(2).Get(10).Get(1).Get(1).Get(2).Get(1).Get_String(2)
 }

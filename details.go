@@ -9,6 +9,39 @@ import (
    "net/url"
 )
 
+func (h Header) Details(app string) (*Details, error) {
+   req, err := http.NewRequest(
+      "GET", "https://android.clients.google.com/fdfe/details", nil,
+   )
+   if err != nil {
+      return nil, err
+   }
+   // half of the apps I test require User-Agent,
+   // so just set it for all of them
+   h.Set_Agent(req.Header)
+   h.Set_Auth(req.Header)
+   h.Set_Device(req.Header)
+   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
+   res, err := Client.Do(req)
+   if err != nil {
+      return nil, err
+   }
+   defer res.Body.Close()
+   body, err := io.ReadAll(res.Body)
+   if err != nil {
+      return nil, err
+   }
+   // ResponseWrapper
+   response_wrapper, err := protobuf.Unmarshal(body)
+   if err != nil {
+      return nil, err
+   }
+   var det Details
+   // .payload.detailsResponse.docV2
+   det.Message = response_wrapper.Get(1).Get(2).Get(4)
+   return &det, nil
+}
+
 var err_device = errors.New("your device isn't compatible with this version")
 
 type Details struct {
@@ -23,24 +56,6 @@ func (d Details) Creator() (string, error) {
 // .offer.currencyCode
 func (d Details) Currency_Code() (string, error) {
    return d.Get(8).Get_String(2)
-}
-
-// .details.appDetails.file
-func (d Details) File() []File_Metadata {
-   var files []File_Metadata
-   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
-      files = append(files, File_Metadata{file})
-   }
-   return files
-}
-
-// .details.appDetails.installationSize
-func (d Details) Installation_Size() (uint64, error) {
-   value, err := d.Get(13).Get(1).Get_Varint(9)
-   if err != nil {
-      return 0, err_device
-   }
-   return value, nil
 }
 
 func (d Details) MarshalText() ([]byte, error) {
@@ -117,6 +132,17 @@ func (d Details) Micros() (uint64, error) {
    return d.Get(8).Get_Varint(1)
 }
 
+///////////////
+
+// .details.appDetails.installationSize
+func (d Details) Installation_Size() (uint64, error) {
+   value, err := d.Get(13).Get(1).Get_Varint(9)
+   if err != nil {
+      return 0, err_device
+   }
+   return value, nil
+}
+
 // .details.appDetails
 // I dont know the name of field 70, but the similar field 13 is called
 // .numDownloads
@@ -155,36 +181,11 @@ func (d Details) Version_Code() (uint64, error) {
    }
    return value, nil
 }
-
-func (h Header) Details(app string) (*Details, error) {
-   req, err := http.NewRequest(
-      "GET", "https://android.clients.google.com/fdfe/details", nil,
-   )
-   if err != nil {
-      return nil, err
+// .details.appDetails.file
+func (d Details) File() []File_Metadata {
+   var files []File_Metadata
+   for _, file := range d.Get(13).Get(1).Get_Messages(17) {
+      files = append(files, File_Metadata{file})
    }
-   // half of the apps I test require User-Agent,
-   // so just set it for all of them
-   h.Set_Agent(req.Header)
-   h.Set_Auth(req.Header)
-   h.Set_Device(req.Header)
-   req.URL.RawQuery = "doc=" + url.QueryEscape(app)
-   res, err := Client.Do(req)
-   if err != nil {
-      return nil, err
-   }
-   defer res.Body.Close()
-   body, err := io.ReadAll(res.Body)
-   if err != nil {
-      return nil, err
-   }
-   // ResponseWrapper
-   response_wrapper, err := protobuf.Unmarshal(body)
-   if err != nil {
-      return nil, err
-   }
-   var det Details
-   // .payload.detailsResponse.docV2
-   det.Message = response_wrapper.Get(1).Get(2).Get(4)
-   return &det, nil
+   return files
 }
