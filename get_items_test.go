@@ -14,7 +14,6 @@ func Test_Get_Items(t *testing.T) {
    if err := head.Open_Device(home + "/googleplay/x86.bin"); err != nil {
       t.Fatal(err)
    }
-   Client.Log_Level = 2
    res, err := head.Get_Items("com.watchfacestudio.md307digital")
    if err != nil {
       t.Fatal(err)
@@ -64,7 +63,7 @@ func Test_Get_Items(t *testing.T) {
    }
    if v, err := item.Num_Downloads(); err != nil {
       t.Fatal(err)
-   } else if v != 5023 {
+   } else if v < 5023 {
       t.Fatal(v)
    }
 }
