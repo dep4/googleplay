@@ -1,58 +1,113 @@
 # November 22 2022
 
-## Android API 33 (Google APIs)
+## Android 11.0 (Google APIs)
 
-If you instead start the Google Play device and pull:
+Start the Google Play device and pull:
 
 ~~~
-adb pull /system/priv-app/Phonesky/Phonesky.apk Phonesky.apk
+adb pull /product/priv-app/Phonesky/Phonesky.apk Phonesky-30.apk
 ~~~
 
 then start the Google APIs device:
 
 ~~~
-emulator -avd Pixel_3a_XL_API_24 -writable-system
+emulator -avd Pixel_3a_XL_API_30 -writable-system
 ~~~
 
 and push:
 
 ~~~
 adb root
-
 adb remount
-adb push Phonesky.apk /system/priv-app
 adb reboot
 ~~~
 
-we get this result:
+After two minutes, the device has not rebooted. Same result with `x86` or `x86_64`:
 
-> Google Play services has stopped
+https://issuetracker.google.com/issues/260134707
 
-So the pulled `Phonesky.apk` is poisoned somehow. Get the `versionCode` from
-Google Play device:
+## Android 12.0 (Google APIs)
 
-~~~
-> adb shell dumpsys package com.android.vending | rg versionCode
-versionCode=80671500 minSdk=14 targetSdk=23
-~~~
-
-we should try pulling from API 33 (Google Play) instead, so that the Play Store
-version matches the one used with Open GApps.
-
-## Android API 33 (Google Play)
-
-If we start the Google Play device, writable:
+Start the Google Play device and pull:
 
 ~~~
-emulator -list-avds
-emulator -avd Pixel_3a_XL_API_24 -writable-system
+adb pull /product/priv-app/Phonesky/Phonesky.apk Phonesky-31.apk
 ~~~
 
-or not:
+then start the Google APIs device:
 
 ~~~
-emulator -avd Pixel_3a_XL_API_24
+emulator -avd Pixel_3a_XL_API_31 -writable-system
 ~~~
+
+and push:
+
+~~~
+adb root
+adb remount
+adb reboot
+
+adb root
+adb remount
+adb push Phonesky-31.apk /product/priv-app
+adb reboot
+~~~
+
+## Android 12L (Google APIs)
+
+Start the Google Play device and pull:
+
+~~~
+adb pull /product/priv-app/Phonesky/Phonesky.apk Phonesky-32.apk
+~~~
+
+then start the Google APIs device:
+
+~~~
+emulator -avd Pixel_3a_XL_API_32 -writable-system
+~~~
+
+and push:
+
+~~~
+adb root
+adb remount
+adb reboot
+
+adb root
+adb remount
+adb push Phonesky-32.apk /product/priv-app
+adb reboot
+~~~
+
+## Android Tiramisu (Google APIs)
+
+Start the Google Play device and pull:
+
+~~~
+adb pull /product/priv-app/Phonesky/Phonesky.apk Phonesky-33.apk
+~~~
+
+then start the Google APIs device:
+
+~~~
+emulator -avd Pixel_3a_XL_API_33 -writable-system
+~~~
+
+and push:
+
+~~~
+adb root
+adb remount
+adb reboot
+
+adb root
+adb remount
+adb push Phonesky-33.apk /product/priv-app
+adb reboot
+~~~
+
+## Android Tiramisu (Google Play)
 
 we cannot run as root:
 
