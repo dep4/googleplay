@@ -2,12 +2,6 @@
 
 ## Android 11.0 (Google APIs)
 
-Start the Google Play device and pull:
-
-~~~
-adb pull /product/priv-app/Phonesky/Phonesky.apk Phonesky-30.apk
-~~~
-
 then start the Google APIs device:
 
 ~~~
@@ -22,7 +16,8 @@ adb remount
 adb reboot
 ~~~
 
-After two minutes, the device has not rebooted. Same result with `x86` or `x86_64`:
+After two minutes, the device has not rebooted. Same result with `x86` or
+`x86_64`:
 
 https://issuetracker.google.com/issues/260134707
 
