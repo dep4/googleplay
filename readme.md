@@ -69,21 +69,6 @@ downloaded:
 googleplay -a com.google.android.youtube -v 1531188672
 ~~~
 
-## Open problems
-
-Here are some issues that are currently unsolved in this space. First, no one
-has figured out how to get the version history of an app (1), only how to return
-the latest version number (`/fdfe/details`). Older versions numbers are still
-valid, and are accepted by `/fdfe/details` and `/fdfe/delivery`. So if someone
-can discover how to return these old version numbers, it simplifies the process
-of working with older APKs.
-
-Second, no one has figured out how to disable the device check, which means any
-request is checked against the device in the request, and rejected if the device
-does not have the required features.
-
-1. https://github.com/89z/googleplay/issues/33
-
 ## Money
 
 I only provide paid support for issues. Any issue without payment of at least
