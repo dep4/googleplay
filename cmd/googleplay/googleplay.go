@@ -3,7 +3,7 @@ package main
 import (
    "fmt"
    "github.com/89z/googleplay"
-   "github.com/89z/rosso/http"
+   "github.com/dep4/rosso/http"
    "io"
    "os"
    "time"

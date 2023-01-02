@@ -2,7 +2,7 @@ module github.com/89z/googleplay
 
 go 1.18
 
-require github.com/89z/rosso v1.50.2
+require github.com/dep4/rosso v1.50.2
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
