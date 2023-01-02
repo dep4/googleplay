@@ -40,6 +40,8 @@ func main() {
    flag.Parse()
    if f.verbose {
       gp.Client.Log_Level = 2
+   } else {
+      gp.Client.Log_Level = 0
    }
    dir, err := os.UserHomeDir()
    if err != nil {
